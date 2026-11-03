@@ -1,0 +1,14 @@
+server:
+  port: 18880
+spring:
+  application:
+    name: gorson-spring-ai-lab
+  ai:
+    model:
+      chat: deepseek
+
+    deepseek:
+      base-url: https://api.deepseek.com
+      api-key: ${DEEPSEEK_API_KEY}
+      chat:
+        model: deepseek-flash
