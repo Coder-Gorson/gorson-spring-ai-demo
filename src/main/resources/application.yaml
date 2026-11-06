@@ -6,6 +6,20 @@ spring:
   ai:
     model:
       chat: deepseek
+    chat:
+      memory:
+        repository:
+          redis:
+            host: 127.0.0.1
+            port: 6379
+            password: ${REDIS_PASSWORD}
+            index-name: spring-ai-chat-memory-idx
+            key-prefix:
+              spring-ai:chat-memory:
+            time-to-live: 24h
+            initialize-schema: true
+            max-conversation-ids: 1000
+            max-messages-per-conversation: 1000
 
     deepseek:
       base-url: https://api.deepseek.com
