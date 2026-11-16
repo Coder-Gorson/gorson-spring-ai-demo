@@ -3,9 +3,38 @@ server:
 spring:
   application:
     name: gorson-spring-ai-lab
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  data:
+    redis:
+      client-type: jedis
+      host: 127.0.0.1
+      port: 6379
+      password: ${REDIS_PASSWORD}
   ai:
+    vectorstore:
+      redis:
+        initialize-schema: true
+        index-name: gorson-rag-index-v3
+        prefix: "gorson:rag:v3"
+        distance-metric: COSINE
+        vector-algorithm: HNSW
     model:
       chat: deepseek
+      embedding: openai
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+    openai:
+      embedding:
+        base-url: https://api.siliconflow.cn/v1
+        api-key: ${SILICONFLOW_API_KEY}
+        model: BAAI/bge-m3
+        encoding-format: float
     chat:
       memory:
         repository:
