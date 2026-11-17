@@ -88,6 +88,12 @@
 			<groupId>org.springframework.ai</groupId>
 			<artifactId>spring-ai-starter-vector-store-redis</artifactId>
 		</dependency>
+
+		<!-- Spring AI Vector Store Advisor -->
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-vector-store-advisor</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
