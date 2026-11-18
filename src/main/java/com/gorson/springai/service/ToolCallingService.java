@@ -1,8 +1,7 @@
 package com.gorson.springai.service;
 
-import com.gorson.springai.tool.ProjectQueryTools;
-
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -10,14 +9,14 @@ public class ToolCallingService {
 
     private final ChatClient chatClient;
 
-    private final ProjectQueryTools projectQueryTools;
+    private final ToolCallback projectQueryToolCallback;
 
     public ToolCallingService(
             ChatClient.Builder builder,
-            ProjectQueryTools projectQueryTools) {
+            ToolCallback projectQueryToolCallback) {
 
         this.chatClient = builder.build();
-        this.projectQueryTools = projectQueryTools;
+        this.projectQueryToolCallback = projectQueryToolCallback;
     }
 
     public String chat(String question) {
@@ -37,7 +36,7 @@ public class ToolCallingService {
 
                 .user(question)
 
-                .tools(projectQueryTools)
+                .tools(projectQueryToolCallback)
 
                 .call()
 
