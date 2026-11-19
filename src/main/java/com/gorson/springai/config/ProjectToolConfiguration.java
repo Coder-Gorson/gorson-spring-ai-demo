@@ -1,7 +1,9 @@
 package com.gorson.springai.config;
 
+import com.gorson.springai.dto.tool.KnowledgeSearchRequest;
 import com.gorson.springai.dto.tool.ProjectSearchRequest;
 import com.gorson.springai.dto.tool.ProjectStatusStatisticsRequest;
+import com.gorson.springai.service.KnowledgeSearchToolService;
 import com.gorson.springai.service.ProjectQueryService;
 
 import lombok.RequiredArgsConstructor;
@@ -74,13 +76,41 @@ public class ProjectToolConfiguration {
             ToolCallback projectQueryToolCallback,
 
             @Qualifier("projectStatusStatisticsToolCallback")
-            ToolCallback projectStatusStatisticsToolCallback) {
+            ToolCallback projectStatusStatisticsToolCallback,
+
+            @Qualifier("knowledgeSearchToolCallback")
+            ToolCallback knowledgeSearchToolCallback) {
 
         return builder
                 .defaultTools(
                         projectQueryToolCallback,
-                        projectStatusStatisticsToolCallback
+                        projectStatusStatisticsToolCallback,
+                        knowledgeSearchToolCallback
                 )
+                .build();
+    }
+
+    @Bean
+    public ToolCallback knowledgeSearchToolCallback(
+            KnowledgeSearchToolService knowledgeSearchToolService) {
+
+        return FunctionToolCallback.builder(
+                        "searchKnowledgeBase",
+                        knowledgeSearchToolService::searchKnowledge
+                )
+                .description("""
+                    搜索企业投资评价知识库。
+
+                    用于查询企业经营情况、财务数据、
+                    行业环境、项目背景、风险信息等资料。
+
+                    当用户要求基于企业资料进行分析时，
+                    应调用此工具获取知识库中的相关证据。
+
+                    返回内容包括文档编号、文本内容和元数据。
+                    不允许编造检索结果。
+                    """)
+                .inputType(KnowledgeSearchRequest.class)
                 .build();
     }
 }
