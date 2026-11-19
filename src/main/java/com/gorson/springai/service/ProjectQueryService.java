@@ -4,23 +4,31 @@ import com.gorson.springai.dto.tool.ProjectSearchRequest;
 import com.gorson.springai.dto.tool.ProjectSearchRequest.DateRange;
 import com.gorson.springai.dto.tool.ProjectSearchRequest.PageRequest;
 import com.gorson.springai.enums.ProjectStatus;
+import com.gorson.springai.dto.tool.ProjectStatusStatisticsRequest;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class ProjectQueryService {
 
     private final Validator validator;
+    private static final Logger log =
+            LoggerFactory.getLogger(ProjectQueryService.class);
 
     public ProjectQueryService(Validator validator) {
         this.validator = validator;
@@ -63,6 +71,8 @@ public class ProjectQueryService {
 
     public ProjectSearchResult searchProjects(
             ProjectSearchRequest request) {
+
+        log.info("执行项目查询工具，参数：{}", request);
 
         // 1. 参数校验
         validateRequest(request);
@@ -165,6 +175,59 @@ public class ProjectQueryService {
                 pageSize,
                 records
         );
+    }
+
+    public ProjectStatusStatistics countProjectsByStatus(
+            ProjectStatusStatisticsRequest request) {
+
+        log.info("执行项目状态统计工具，项目ID：{}", request.projectIds());
+
+        if (request == null) {
+            throw new IllegalArgumentException("统计参数不能为空");
+        }
+
+        Set<ConstraintViolation<ProjectStatusStatisticsRequest>> violations =
+                validator.validate(request);
+
+        if (!violations.isEmpty()) {
+            throw new IllegalArgumentException(
+                    violations.stream()
+                            .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                            .reduce((a, b) -> a + "; " + b)
+                            .orElse("参数校验失败")
+            );
+        }
+
+        Set<String> projectIds = new HashSet<>(request.projectIds());
+
+        List<ProjectRecord> matched = PROJECTS.stream()
+                .filter(project -> projectIds.contains(project.projectId()))
+                .toList();
+
+        Map<String, Long> counts = new LinkedHashMap<>();
+
+        for (ProjectStatus status : ProjectStatus.values()) {
+            counts.put(status.name(), 0L);
+        }
+
+        for (ProjectRecord project : matched) {
+            counts.merge(
+                    project.status().name(),
+                    1L,
+                    Long::sum
+            );
+        }
+
+        return new ProjectStatusStatistics(
+                matched.size(),
+                counts
+        );
+    }
+
+    public record ProjectStatusStatistics(
+            int totalProjects,
+            Map<String, Long> statusCounts
+    ) {
     }
 
     /**
