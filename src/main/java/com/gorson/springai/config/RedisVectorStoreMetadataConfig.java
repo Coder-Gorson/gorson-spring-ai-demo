@@ -13,9 +13,11 @@ public class RedisVectorStoreMetadataConfig {
     public List<RedisVectorStore.MetadataField> redisMetadataFields() {
 
         return List.of(
+                RedisVectorStore.MetadataField.tag("tenantId"),
                 RedisVectorStore.MetadataField.tag("projectId"),
                 RedisVectorStore.MetadataField.tag("source"),
-                RedisVectorStore.MetadataField.numeric("page")
+                RedisVectorStore.MetadataField.numeric("page"),
+                RedisVectorStore.MetadataField.tag("chunkId")
         );
     }
 }

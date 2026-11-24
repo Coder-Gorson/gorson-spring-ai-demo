@@ -1,8 +1,12 @@
 package com.gorson.springai.controller;
 
 import com.gorson.springai.dto.*;
+import com.gorson.springai.security.CurrentUser;
+import com.gorson.springai.security.CurrentUserProvider;
+import com.gorson.springai.security.ToolContextSupport;
 import com.gorson.springai.service.VectorStoreService;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.ai.document.Document;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
@@ -14,13 +18,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/rag/vector-store")
+@RequiredArgsConstructor
 public class VectorStoreController {
 
     private final VectorStoreService vectorStoreService;
-
-    public VectorStoreController(VectorStoreService vectorStoreService) {
-        this.vectorStoreService = vectorStoreService;
-    }
+    private final CurrentUserProvider currentUserProvider;
 
     /**
      * 批量文档入库
@@ -45,6 +47,16 @@ public class VectorStoreController {
             );
         }
 
+        // 获取当前用户
+        CurrentUser currentUser =
+                currentUserProvider.requireCurrentUser();
+
+        // 校验知识库写入权限
+        ToolContextSupport.requireAuthority(
+                currentUser,
+                "KNOWLEDGE_WRITE"
+        );
+
         List<Document> documents = request.documents().stream()
                 .map(item -> {
 
@@ -63,6 +75,8 @@ public class VectorStoreController {
                     }
 
                     Map<String, Object> metadata = Map.of(
+                            "tenantId", currentUser.tenantId(),
+                            "chunkId", item.id(),
                             "projectId", item.projectId(),
                             "source", item.source(),
                             "page", item.page()
@@ -127,12 +141,22 @@ public class VectorStoreController {
             );
         }
 
-        List<Document> documents = vectorStoreService.search(
-                request.query(),
-                topK,
-                request.projectId(),
-                threshold
+        CurrentUser currentUser =
+                currentUserProvider.requireCurrentUser();
+
+        ToolContextSupport.requireAuthority(
+                currentUser,
+                "KNOWLEDGE_READ"
         );
+
+        List<Document> documents =
+                vectorStoreService.searchByTenantAndProject(
+                        request.query(),
+                        topK,
+                        currentUser.tenantId(),
+                        request.projectId(),
+                        threshold
+                );
 
         List<VectorStoreSearchResponse.SearchResult> results =
                 documents.stream()
@@ -155,7 +179,7 @@ public class VectorStoreController {
 
     @DeleteMapping("/documents/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@PathVariable String id) {
+    public void deleteById(@PathVariable String id, @RequestParam String projectId) {
 
         if (!StringUtils.hasText(id)) {
             throw new ResponseStatusException(
@@ -164,7 +188,21 @@ public class VectorStoreController {
             );
         }
 
-        vectorStoreService.deleteByIds(List.of(id));
+        if (!StringUtils.hasText(projectId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "projectId不能为空"
+            );
+        }
+
+        CurrentUser currentUser =
+                currentUserProvider.requireCurrentUser();
+
+        vectorStoreService.deleteByIds(
+                List.of(id),
+                currentUser.tenantId(),
+                projectId
+        );
     }
 
     @DeleteMapping("/sources")
@@ -182,7 +220,14 @@ public class VectorStoreController {
             );
         }
 
-        vectorStoreService.deleteBySource(projectId, source);
+        CurrentUser currentUser =
+                currentUserProvider.requireCurrentUser();
+
+        vectorStoreService.deleteBySource(
+                currentUser.tenantId(),
+                projectId,
+                source
+        );
     }
 
     /**
@@ -233,11 +278,11 @@ public class VectorStoreController {
                 })
                 .toList();
 
-        vectorStoreService.replaceSourceDocuments(
-                request.projectId(),
-                request.source(),
-                documents
-        );
+//        vectorStoreService.replaceSourceDocuments(
+//                request.projectId(),
+//                request.source(),
+//                documents
+//        );
 
         return new VectorStoreAddResponse(
                 documents.size(),

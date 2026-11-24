@@ -2,6 +2,10 @@ package com.gorson.springai.service;
 
 import com.gorson.springai.dto.RagAskResponse;
 
+import com.gorson.springai.security.CurrentUser;
+import com.gorson.springai.security.CurrentUserProvider;
+import com.gorson.springai.security.ToolContextSupport;
+import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.Document;
 import org.springframework.stereotype.Service;
@@ -12,19 +16,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
+@RequiredArgsConstructor
 public class RagService {
 
     private final VectorStoreService vectorStoreService;
 
     private final ChatClient chatClient;
 
-    public RagService(
-            VectorStoreService vectorStoreService,
-            ChatClient.Builder chatClientBuilder) {
-
-        this.vectorStoreService = vectorStoreService;
-        this.chatClient = chatClientBuilder.build();
-    }
+    private final CurrentUserProvider currentUserProvider;
 
     /**
      * RAG 问答
@@ -35,26 +34,25 @@ public class RagService {
             int topK,
             double threshold) {
 
-        // 1. 从 Redis VectorStore 检索相关文档
-        List<Document> documents = vectorStoreService.search(
-                question,
-                topK,
-                projectId,
-                threshold
+        // 1. 获取当前登录用户
+        CurrentUser currentUser =
+                currentUserProvider.requireCurrentUser();
+
+        // 2. 校验知识库读取权限
+        ToolContextSupport.requireAuthority(
+                currentUser,
+                "KNOWLEDGE_READ"
         );
 
-        // 2. 没有检索到相关资料，不调用大模型
-        if (documents.isEmpty()) {
-            return new RagAskResponse(
-                    question,
-                    "当前知识库中没有检索到相关资料，无法回答该问题。",
-                    0,
-                    List.of()
-            );
-        }
-
-        // 3. 将检索结果组装成上下文
-        String context = buildContext(documents);
+        // 3. 按租户 + 项目进行向量检索
+        List<Document> documents =
+                vectorStoreService.searchByTenantAndProject(
+                        question,
+                        topK,
+                        currentUser.tenantId(),
+                        projectId,
+                        threshold
+                );
 
         // 4. 调用 DeepSeek 生成答案
         String answer = chatClient.prompt()
@@ -87,7 +85,7 @@ public class RagService {
                                 并在关键结论后标注资料编号。
                                 """)
                         .param("question", question)
-                        .param("context", context))
+                        .param("context", documents))
 
                 .call()
                 .content();

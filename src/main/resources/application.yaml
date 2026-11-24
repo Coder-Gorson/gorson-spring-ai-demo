@@ -17,8 +17,8 @@ spring:
     vectorstore:
       redis:
         initialize-schema: true
-        index-name: gorson-rag-index-v3
-        prefix: "gorson:rag:v3"
+        index-name: gorson-rag-index-v4
+        prefix: "gorson:rag:v4"
         distance-metric: COSINE
         vector-algorithm: HNSW
     model:
