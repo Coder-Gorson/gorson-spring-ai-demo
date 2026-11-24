@@ -17,8 +17,8 @@ spring:
     vectorstore:
       redis:
         initialize-schema: true
-        index-name: gorson-rag-index-v4
-        prefix: "gorson:rag:v4"
+        index-name: gorson-rag-index-v5
+        prefix: "gorson:rag:v5"
         distance-metric: COSINE
         vector-algorithm: HNSW
     model:
@@ -55,3 +55,6 @@ spring:
       api-key: ${DEEPSEEK_API_KEY}
       chat:
         model: deepseek-flash
+logging:
+  level:
+    org.springframework.ai.vectorstore.redis: DEBUG

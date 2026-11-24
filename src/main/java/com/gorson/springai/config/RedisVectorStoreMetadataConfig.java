@@ -17,7 +17,9 @@ public class RedisVectorStoreMetadataConfig {
                 RedisVectorStore.MetadataField.tag("projectId"),
                 RedisVectorStore.MetadataField.tag("source"),
                 RedisVectorStore.MetadataField.numeric("page"),
-                RedisVectorStore.MetadataField.tag("chunkId")
+                RedisVectorStore.MetadataField.tag("chunkId"),
+                RedisVectorStore.MetadataField.tag("sourceVersion"),
+                RedisVectorStore.MetadataField.tag("sourceKey")
         );
     }
 }

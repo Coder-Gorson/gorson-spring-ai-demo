@@ -12,7 +12,10 @@ import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -255,6 +258,131 @@ public class VectorStoreService {
     }
 
     /**
+     * 替换指定租户、项目下的文件向量数据。
+     *
+     * 采用新版本先入库、旧版本后清理的方式。
+     */
+    public void replaceSourceDocuments(
+            String tenantId,
+            String projectId,
+            String source,
+            List<Document> documents) {
+
+        // 1. 参数校验
+        validateScope(tenantId, projectId);
+
+        if (!StringUtils.hasText(source)) {
+            throw new IllegalArgumentException("文件来源不能为空");
+        }
+
+        if (documents == null || documents.isEmpty()) {
+            throw new IllegalArgumentException("替换文档不能为空");
+        }
+
+        // 2. 生成本次替换的版本号
+        String newVersion = UUID.randomUUID().toString();
+        String sourceKey = generateSourceKey(source);
+
+        // 3. 构建新版本 Document
+        List<Document> newDocuments = documents.stream()
+                .map(document -> {
+
+                    if (document == null
+                            || !StringUtils.hasText(document.getId())
+                            || !StringUtils.hasText(document.getText())) {
+                        throw new IllegalArgumentException(
+                                "Document ID 和文本不能为空"
+                        );
+                    }
+
+                    Map<String, Object> metadata =
+                            new HashMap<>(document.getMetadata());
+
+                    // 服务端统一确定文档归属
+                    metadata.put("tenantId", tenantId);
+                    metadata.put("projectId", projectId);
+                    metadata.put("source", source);
+                    metadata.put("sourceKey", sourceKey);
+                    metadata.put("chunkId", document.getId());
+                    metadata.put("sourceVersion", newVersion);
+
+                    return new Document(
+                            document.getId(),
+                            document.getText(),
+                            metadata
+                    );
+                })
+                .toList();
+
+        // 4. 新版本先入库
+        try {
+            vectorStore.add(newDocuments);
+        } catch (RuntimeException e) {
+
+            // 如果新版本发生部分写入，尝试清理本次版本
+            try {
+                FilterExpressionBuilder builder =
+                        new FilterExpressionBuilder();
+
+                Filter.Expression cleanupFilter = builder.and(
+                        builder.and(
+                                builder.eq("tenantId", tenantId),
+                                builder.eq("projectId", projectId)
+                        ),
+                        builder.and(
+                                builder.eq("sourceKey", sourceKey),
+                                builder.eq("sourceVersion", newVersion)
+                        )
+                ).build();
+
+                vectorStore.delete(cleanupFilter);
+
+            } catch (RuntimeException cleanupException) {
+                e.addSuppressed(cleanupException);
+            }
+
+            throw new IllegalStateException(
+                    "新版本入库失败，旧版本保留",
+                    e
+            );
+        }
+
+        // 5. 新版本成功后，删除旧版本
+        FilterExpressionBuilder builder =
+                new FilterExpressionBuilder();
+
+        Filter.Expression oldVersionFilter = builder.and(
+                builder.and(
+                        builder.eq("tenantId", tenantId),
+                        builder.eq("projectId", projectId)
+                ),
+                builder.and(
+                        builder.eq("sourceKey", sourceKey),
+                        builder.ne("sourceVersion", newVersion)
+                )
+        ).build();
+
+        try {
+            vectorStore.delete(oldVersionFilter);
+
+        } catch (RuntimeException e) {
+            throw new IllegalStateException(
+                    "新版本已入库，但旧版本清理失败，可能存在多个版本",
+                    e
+            );
+        }
+
+        log.info(
+                "文件替换完成，tenantId={}, projectId={}, source={}, version={}, chunkCount={}",
+                tenantId,
+                projectId,
+                source,
+                newVersion,
+                newDocuments.size()
+        );
+    }
+
+    /**
      * 检索参数校验
      */
     private void validateSearchParams(String query, int topK) {
@@ -265,6 +393,18 @@ public class VectorStoreService {
 
         if (topK <= 0) {
             throw new IllegalArgumentException("topK必须大于0");
+        }
+    }
+
+    private String generateSourceKey(String source) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(source.getBytes(StandardCharsets.UTF_8));
+
+            return HexFormat.of().formatHex(digest);
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("生成文件标识失败", e);
         }
     }
 

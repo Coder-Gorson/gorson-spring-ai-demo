@@ -13,8 +13,13 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/rag/vector-store")
@@ -74,11 +79,15 @@ public class VectorStoreController {
                         );
                     }
 
+                    String sourceKey = generateSourceKey(item.source());
+
                     Map<String, Object> metadata = Map.of(
                             "tenantId", currentUser.tenantId(),
                             "chunkId", item.id(),
                             "projectId", item.projectId(),
                             "source", item.source(),
+                            "sourceVersion", UUID.randomUUID().toString(),
+                            "sourceKey", sourceKey,
                             "page", item.page()
                     );
 
@@ -249,6 +258,14 @@ public class VectorStoreController {
             );
         }
 
+        CurrentUser currentUser =
+                currentUserProvider.requireCurrentUser();
+
+        ToolContextSupport.requireAuthority(
+                currentUser,
+                "KNOWLEDGE_WRITE"
+        );
+
         List<Document> documents = request.documents().stream()
                 .map(item -> {
 
@@ -278,11 +295,12 @@ public class VectorStoreController {
                 })
                 .toList();
 
-//        vectorStoreService.replaceSourceDocuments(
-//                request.projectId(),
-//                request.source(),
-//                documents
-//        );
+        vectorStoreService.replaceSourceDocuments(
+                currentUser.tenantId(),
+                request.projectId(),
+                request.source(),
+                documents
+        );
 
         return new VectorStoreAddResponse(
                 documents.size(),
@@ -290,5 +308,17 @@ public class VectorStoreController {
                         .map(Document::getId)
                         .toList()
         );
+    }
+
+    private String generateSourceKey(String source) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                    .digest(source.getBytes(StandardCharsets.UTF_8));
+
+            return HexFormat.of().formatHex(digest);
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("生成文件标识失败", e);
+        }
     }
 }
