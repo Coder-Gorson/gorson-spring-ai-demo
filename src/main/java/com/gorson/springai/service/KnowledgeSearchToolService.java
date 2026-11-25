@@ -28,6 +28,7 @@ public class KnowledgeSearchToolService {
     private static final int DEFAULT_TOP_K = 5;
 
     private final VectorStoreService vectorStoreService;
+    private final ProjectQueryService projectQueryService;
 
     /**
      * 知识库检索工具
@@ -44,6 +45,9 @@ public class KnowledgeSearchToolService {
         if (request == null || !StringUtils.hasText(request.query())) {
             throw new IllegalArgumentException("知识库检索问题不能为空");
         }
+        if (!StringUtils.hasText(request.projectId())) {
+            throw new IllegalArgumentException("目标项目编号不能为空");
+        }
 
         // 2. 获取当前用户身份
         CurrentUser currentUser =
@@ -54,6 +58,12 @@ public class KnowledgeSearchToolService {
                 currentUser,
                 "KNOWLEDGE_READ"
         );
+        String tenantId = currentUser.tenantId();
+        String projectId = request.projectId();
+
+        if (!projectQueryService.existsInTenant(tenantId, projectId)) {
+            throw new SecurityException("项目不存在或无权访问");
+        }
 
         log.info(
                 "开始知识库检索，userId={}, tenantId={}, query={}",
@@ -63,10 +73,18 @@ public class KnowledgeSearchToolService {
         );
 
         // 4. 执行当前租户范围内的向量检索
-        List<Document> documents = vectorStoreService.search(
+//        List<Document> documents = vectorStoreService.search(
+//                request.query(),
+//                DEFAULT_TOP_K,
+//                currentUser.tenantId()
+//        );
+
+        List<Document> documents = vectorStoreService.searchByTenantAndProject(
                 request.query(),
                 DEFAULT_TOP_K,
-                currentUser.tenantId()
+                tenantId,
+                projectId,
+                0.0
         );
 
         // 5. 转换检索结果

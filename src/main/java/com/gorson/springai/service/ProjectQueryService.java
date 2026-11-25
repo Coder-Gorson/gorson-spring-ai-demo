@@ -411,4 +411,10 @@ public class ProjectQueryService {
         }
     }
 
+    public boolean existsInTenant(String tenantId, String projectId) {
+        return PROJECTS.stream()
+                .anyMatch(project -> project.tenantId().equals(tenantId)
+                        && project.projectId().equals(projectId));
+    }
+
 }
