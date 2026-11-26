@@ -1,10 +1,9 @@
 package com.gorson.springai.service;
 
-import com.gorson.springai.dto.ProjectRecord;
-import com.gorson.springai.dto.ProjectSearchResult;
+import com.gorson.springai.dto.result.ProjectSearchResult;
 import com.gorson.springai.dto.ProjectStatusStatistics;
-import com.gorson.springai.dto.tool.ProjectSearchRequest;
-import com.gorson.springai.dto.tool.ProjectStatusStatisticsRequest;
+import com.gorson.springai.dto.request.ProjectSearchRequest;
+import com.gorson.springai.dto.request.ProjectStatusStatisticsRequest;
 import com.gorson.springai.security.CurrentUser;
 import com.gorson.springai.security.ToolContextSupport;
 
@@ -13,9 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

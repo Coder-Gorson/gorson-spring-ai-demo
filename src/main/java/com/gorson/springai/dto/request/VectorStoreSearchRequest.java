@@ -1,4 +1,4 @@
-package com.gorson.springai.dto;
+package com.gorson.springai.dto.request;
 
 public record VectorStoreSearchRequest(
         String query,

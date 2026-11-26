@@ -1,4 +1,4 @@
-package com.gorson.springai.dto;
+package com.gorson.springai.dto.request;
 
 public record RagAskRequest(
         String question,
@@ -7,3 +7,4 @@ public record RagAskRequest(
         Double similarityThreshold
 ) {
 }
+

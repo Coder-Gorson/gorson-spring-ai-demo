@@ -1,29 +1,27 @@
-package com.gorson.springai.dto;
+package com.gorson.springai.dto.response;
 
 import java.util.List;
 import java.util.Map;
 
-public record DocumentSplitResponse(
+public record DocumentUploadResponse(
 
         String filename,
 
         long fileSize,
 
-        int originalDocumentCount,
+        int documentCount,
 
-        int chunkCount,
-
-        List<ChunkItem> chunks
+        List<DocumentItem> documents
 
 ) {
 
-    public record ChunkItem(
+    public record DocumentItem(
 
             String id,
 
             int textLength,
 
-            String text,
+            String textPreview,
 
             Map<String, Object> metadata
 

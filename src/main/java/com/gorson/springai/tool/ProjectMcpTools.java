@@ -1,7 +1,7 @@
 package com.gorson.springai.tool;
 
-import com.gorson.springai.dto.ProjectSearchResult;
-import com.gorson.springai.dto.tool.ProjectSearchRequest;
+import com.gorson.springai.dto.result.ProjectSearchResult;
+import com.gorson.springai.dto.request.ProjectSearchRequest;
 import com.gorson.springai.security.CurrentUser;
 import com.gorson.springai.security.CurrentUserProvider;
 import com.gorson.springai.security.ToolContextSupport;

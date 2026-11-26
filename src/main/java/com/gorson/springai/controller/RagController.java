@@ -1,7 +1,7 @@
 package com.gorson.springai.controller;
 
-import com.gorson.springai.dto.RagAskRequest;
-import com.gorson.springai.dto.RagAskResponse;
+import com.gorson.springai.dto.response.RagAskResponse;
+import com.gorson.springai.dto.request.RagAskRequest;
 import com.gorson.springai.service.AdvisorRagService;
 import com.gorson.springai.service.RagService;
 
@@ -29,11 +29,11 @@ public class RagController {
      * RAG 问答接口
      */
     @PostMapping("/ask")
-    public RagAskResponse ask(@RequestBody RagAskRequest request) {
+    public RagAskResponse ask(@RequestBody RagAskRequest RagAskRequest) {
 
-        if (request == null
-                || !StringUtils.hasText(request.question())
-                || !StringUtils.hasText(request.projectId())) {
+        if (RagAskRequest == null
+                || !StringUtils.hasText(RagAskRequest.question())
+                || !StringUtils.hasText(RagAskRequest.projectId())) {
 
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -41,13 +41,13 @@ public class RagController {
             );
         }
 
-        int topK = request.topK() == null
+        int topK = RagAskRequest.topK() == null
                 ? 3
-                : request.topK();
+                : RagAskRequest.topK();
 
-        double threshold = request.similarityThreshold() == null
+        double threshold = RagAskRequest.similarityThreshold() == null
                 ? 0.0
-                : request.similarityThreshold();
+                : RagAskRequest.similarityThreshold();
 
         if (topK < 1 || topK > 20) {
             throw new ResponseStatusException(
@@ -64,8 +64,8 @@ public class RagController {
         }
 
         return ragService.ask(
-                request.question(),
-                request.projectId(),
+                RagAskRequest.question(),
+                RagAskRequest.projectId(),
                 topK,
                 threshold
         );

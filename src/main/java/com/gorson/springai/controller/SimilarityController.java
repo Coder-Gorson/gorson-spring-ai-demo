@@ -1,7 +1,7 @@
 package com.gorson.springai.controller;
 
-import com.gorson.springai.dto.SimilarityRequest;
-import com.gorson.springai.dto.SimilarityResponse;
+import com.gorson.springai.dto.request.SimilarityRequest;
+import com.gorson.springai.dto.response.SimilarityResponse;
 import com.gorson.springai.service.TextSimilarityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;

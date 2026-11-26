@@ -1,7 +1,7 @@
 package com.gorson.springai.controller;
 
-import com.gorson.springai.dto.DocumentSplitResponse;
-import com.gorson.springai.dto.DocumentUploadResponse;
+import com.gorson.springai.dto.response.DocumentSplitResponse;
+import com.gorson.springai.dto.response.DocumentUploadResponse;
 import com.gorson.springai.service.DocumentReaderService;
 
 import com.gorson.springai.service.DocumentSplitService;

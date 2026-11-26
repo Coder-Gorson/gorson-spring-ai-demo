@@ -1,7 +1,7 @@
 package com.gorson.springai.controller;
 
-import com.gorson.springai.dto.EmbeddingTestRequest;
-import com.gorson.springai.dto.EmbeddingTestResponse;
+import com.gorson.springai.dto.request.EmbeddingTestRequest;
+import com.gorson.springai.dto.response.EmbeddingTestResponse;
 import com.gorson.springai.service.EmbeddingService;
 
 import org.springframework.beans.factory.annotation.Value;

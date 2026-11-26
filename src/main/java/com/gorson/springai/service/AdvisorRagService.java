@@ -1,6 +1,6 @@
 package com.gorson.springai.service;
 
-import com.gorson.springai.dto.RagAskResponse;
+import com.gorson.springai.dto.response.RagAskResponse;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.ChatClientResponse;

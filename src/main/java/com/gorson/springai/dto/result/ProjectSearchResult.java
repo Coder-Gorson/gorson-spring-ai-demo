@@ -1,6 +1,6 @@
-package com.gorson.springai.dto;
+package com.gorson.springai.dto.result;
 
-import com.gorson.springai.service.ProjectQueryService;
+import com.gorson.springai.dto.ProjectRecord;
 
 import java.util.List;
 

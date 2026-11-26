@@ -1,13 +1,13 @@
 package com.gorson.springai.service;
 
 import com.gorson.springai.dto.ProjectStatusStatistics;
-import com.gorson.springai.dto.tool.ProjectSearchRequest;
-import com.gorson.springai.dto.tool.ProjectSearchRequest.DateRange;
-import com.gorson.springai.dto.tool.ProjectSearchRequest.PageRequest;
+import com.gorson.springai.dto.request.ProjectSearchRequest;
+import com.gorson.springai.dto.request.ProjectSearchRequest.DateRange;
+import com.gorson.springai.dto.request.ProjectSearchRequest.PageRequest;
 import com.gorson.springai.enums.ProjectStatus;
-import com.gorson.springai.dto.tool.ProjectStatusStatisticsRequest;
+import com.gorson.springai.dto.request.ProjectStatusStatisticsRequest;
 import com.gorson.springai.dto.ProjectRecord;
-import com.gorson.springai.dto.ProjectSearchResult;
+import com.gorson.springai.dto.result.ProjectSearchResult;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;

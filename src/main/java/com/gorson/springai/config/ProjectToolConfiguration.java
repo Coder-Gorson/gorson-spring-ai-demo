@@ -1,14 +1,12 @@
 package com.gorson.springai.config;
 
-import com.gorson.springai.dto.ProjectRecord;
-import com.gorson.springai.dto.ProjectSearchResult;
+import com.gorson.springai.dto.result.ProjectSearchResult;
 import com.gorson.springai.dto.ProjectStatusStatistics;
-import com.gorson.springai.dto.tool.KnowledgeSearchRequest;
-import com.gorson.springai.dto.tool.KnowledgeSearchResult;
-import com.gorson.springai.dto.tool.ProjectSearchRequest;
-import com.gorson.springai.dto.tool.ProjectStatusStatisticsRequest;
+import com.gorson.springai.dto.request.KnowledgeSearchRequest;
+import com.gorson.springai.dto.result.KnowledgeSearchResult;
+import com.gorson.springai.dto.request.ProjectSearchRequest;
+import com.gorson.springai.dto.request.ProjectStatusStatisticsRequest;
 import com.gorson.springai.service.KnowledgeSearchToolService;
-import com.gorson.springai.service.ProjectQueryService;
 
 import com.gorson.springai.service.ProjectToolService;
 import lombok.RequiredArgsConstructor;

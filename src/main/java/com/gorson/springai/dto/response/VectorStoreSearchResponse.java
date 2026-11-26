@@ -1,4 +1,4 @@
-package com.gorson.springai.dto;
+package com.gorson.springai.dto.response;
 
 import java.util.List;
 import java.util.Map;

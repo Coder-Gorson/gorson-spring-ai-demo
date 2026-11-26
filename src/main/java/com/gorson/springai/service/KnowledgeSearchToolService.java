@@ -1,8 +1,8 @@
 
 package com.gorson.springai.service;
 
-import com.gorson.springai.dto.tool.KnowledgeSearchRequest;
-import com.gorson.springai.dto.tool.KnowledgeSearchResult;
+import com.gorson.springai.dto.request.KnowledgeSearchRequest;
+import com.gorson.springai.dto.result.KnowledgeSearchResult;
 import com.gorson.springai.security.CurrentUser;
 import com.gorson.springai.security.ToolContextSupport;
 
