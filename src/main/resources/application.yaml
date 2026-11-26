@@ -49,7 +49,12 @@ spring:
             initialize-schema: true
             max-conversation-ids: 1000
             max-messages-per-conversation: 1000
-
+    mcp:
+      server:
+        enabled: false
+        name: gorson-project-tools
+        protocol: STREAMABLE
+        tool-callback-converter: false
     deepseek:
       base-url: https://api.deepseek.com
       api-key: ${DEEPSEEK_API_KEY}
