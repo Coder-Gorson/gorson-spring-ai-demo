@@ -21,7 +21,8 @@ public class LocalCurrentUserProvider implements CurrentUserProvider {
                 Set.of(
                         "PROJECT_READ",
                         "KNOWLEDGE_READ",
-                        "KNOWLEDGE_WRITE"
+                        "KNOWLEDGE_WRITE",
+                        "REPORT_APPROVE"
                 )
         );
     }
